@@ -1,22 +1,16 @@
 #!/usr/bin/env python3
 
 import telnetlib as tn
-#from influxdb import InfluxDBClient
 import time as t
 import datetime as dt
 import os
 import sys
-import logging
-from logging.handlers import TimedRotatingFileHandler
-#import sdnotify
-#from configparser import ConfigParser
 
-#influx_ip = None
-#influx_port = None
-#influx_username = None
-#influx_password = None
-#influx_database = None
-modem_ip = '192.168.42.186'
+try:
+    modem_ip = sys.argv[1]
+except IndexError:
+    modem_ip = '192.168.42.186'
+
 modem_username = 'admin'
 modem_password = 'admin'
 
@@ -71,12 +65,9 @@ def main():
         parsed_stats = retrieve_stats()
         json = format_json(parsed_stats, timestamp)
         print(json)
-        #send_stats_to_influxdb(parsed_stats, timestamp)
+
     except Exception as ex:
-        ex_type, value, traceback = sys.exc_info()
-        filename = os.path.split(traceback.tb_frame.f_code.co_filename)[1]
-        logger.error("{0}, {1}: {2}".format(filename, traceback.tb_lineno, ex))
-        #t.sleep(60)
+        print("Error")
 
 
 def retrieve_stats():
@@ -102,7 +93,7 @@ def retrieve_stats():
 def format_json(parsedStats, timestamp):
     try:
         if parsedStats.connection_up:
-            return [{"measurement": "connection", "time": timestamp,
+            return [{"measurement": "dslstats"+"_"+modem_ip, "time": timestamp,
                      "fields":
                          {"AttDown": parsedStats.attn_down,
                           "AttnUp": parsedStats.attn_up,
@@ -149,54 +140,4 @@ def format_json(parsedStats, timestamp):
         raise
 
 
-def send_stats_to_influxdb(parsed_stats, timestamp):
-    try:
-        db_client = InfluxDBClient(influx_ip, influx_port, influx_username, influx_password, influx_database)
-        if not {u'name': u'dslstats'} in db_client.get_list_database():
-            db_client.create_database("dslstats")
-            db_client.create_retention_policy("dslstats-retention-policy", "52w", "1", default=True)
-        json = format_json(parsed_stats, timestamp)
-        db_client.write_points(json)
-    except Exception:
-        raise
-
-
-#n = sdnotify.SystemdNotifier()
-#n.notify("READY=1")
-
-#config_path = "dsl-stats-to-influxdb-3_config.ini"
-
-#config = ConfigParser()
-#config.read(config_path)
-
-#if "InfluxDB" in config:
-#    influx_ip = config["InfluxDB"].get("ip-address")
-#    influx_port = config["InfluxDB"].get("port")
-#    influx_username = config["InfluxDB"].get("username")
-#    influx_password = config["InfluxDB"].get("password")
-#    influx_database = config["InfluxDB"].get("database")
-#    if influx_port is not None:
-#        influx_port = int(influx_port)
-#else:
-#    raise Exception("Wasn't able to find the 'InfluxDB' section in the config")
-
-#if influx_ip is None or influx_port is None or influx_username is None or influx_password is None or influx_database is None:
-#    raise Exception("At least one piece of Influx connection information is missing from the config")
-
-#if "Modem" in config:
-#    modem_ip = config["Modem"].get("ip-address")
-#    modem_username = config["Modem"].get("username")
-#    modem_password = config["Modem"].get("password")
-#else:
-#    raise Exception("Wasn't able to find the 'Modem' section in the config")
-#
-#if modem_ip is None or modem_username is None or modem_password is None:
-#    raise Exception("At least one piece of Modem connection information is missing from the config")
-
-logger = logging.getLogger("Rotating Error Log")
-logger.setLevel(logging.ERROR)
-handler = TimedRotatingFileHandler("dsl-stats-to-influxdb-3.log", when="midnight", backupCount=5)
-formatter = logging.Formatter(fmt="%(asctime)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 main()
