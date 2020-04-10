@@ -1,22 +1,24 @@
+#!/usr/bin/env python3
+
 import telnetlib as tn
-from influxdb import InfluxDBClient
+#from influxdb import InfluxDBClient
 import time as t
 import datetime as dt
 import os
 import sys
 import logging
 from logging.handlers import TimedRotatingFileHandler
-import sdnotify
-from configparser import ConfigParser
+#import sdnotify
+#from configparser import ConfigParser
 
-influx_ip = None
-influx_port = None
-influx_username = None
-influx_password = None
-influx_database = None
-modem_ip = None
-modem_username = None
-modem_password = None
+#influx_ip = None
+#influx_port = None
+#influx_username = None
+#influx_password = None
+#influx_database = None
+modem_ip = '192.168.42.186'
+modem_username = 'admin'
+modem_password = 'admin'
 
 
 class ParsedStats:
@@ -64,16 +66,17 @@ class ParsedStats:
 
 
 def main():
-    while True:
-        timestamp = dt.datetime.fromtimestamp(t.time()).strftime("%Y-%m-%dT%H:%M:%S")
-        try:
-            parsed_stats = retrieve_stats()
-            send_stats_to_influxdb(parsed_stats, timestamp)
-        except Exception as ex:
-            ex_type, value, traceback = sys.exc_info()
-            filename = os.path.split(traceback.tb_frame.f_code.co_filename)[1]
-            logger.error("{0}, {1}: {2}".format(filename, traceback.tb_lineno, ex))
-        t.sleep(60)
+    timestamp = dt.datetime.fromtimestamp(t.time()).strftime("%Y-%m-%dT%H:%M:%S")
+    try:
+        parsed_stats = retrieve_stats()
+        json = format_json(parsed_stats, timestamp)
+        print(json)
+        #send_stats_to_influxdb(parsed_stats, timestamp)
+    except Exception as ex:
+        ex_type, value, traceback = sys.exc_info()
+        filename = os.path.split(traceback.tb_frame.f_code.co_filename)[1]
+        logger.error("{0}, {1}: {2}".format(filename, traceback.tb_lineno, ex))
+        #t.sleep(60)
 
 
 def retrieve_stats():
@@ -158,37 +161,37 @@ def send_stats_to_influxdb(parsed_stats, timestamp):
         raise
 
 
-n = sdnotify.SystemdNotifier()
-n.notify("READY=1")
+#n = sdnotify.SystemdNotifier()
+#n.notify("READY=1")
 
-config_path = "dsl-stats-to-influxdb-3_config.ini"
+#config_path = "dsl-stats-to-influxdb-3_config.ini"
 
-config = ConfigParser()
-config.read(config_path)
+#config = ConfigParser()
+#config.read(config_path)
 
-if "InfluxDB" in config:
-    influx_ip = config["InfluxDB"].get("ip-address")
-    influx_port = config["InfluxDB"].get("port")
-    influx_username = config["InfluxDB"].get("username")
-    influx_password = config["InfluxDB"].get("password")
-    influx_database = config["InfluxDB"].get("database")
-    if influx_port is not None:
-        influx_port = int(influx_port)
-else:
-    raise Exception("Wasn't able to find the 'InfluxDB' section in the config")
+#if "InfluxDB" in config:
+#    influx_ip = config["InfluxDB"].get("ip-address")
+#    influx_port = config["InfluxDB"].get("port")
+#    influx_username = config["InfluxDB"].get("username")
+#    influx_password = config["InfluxDB"].get("password")
+#    influx_database = config["InfluxDB"].get("database")
+#    if influx_port is not None:
+#        influx_port = int(influx_port)
+#else:
+#    raise Exception("Wasn't able to find the 'InfluxDB' section in the config")
 
-if influx_ip is None or influx_port is None or influx_username is None or influx_password is None or influx_database is None:
-    raise Exception("At least one piece of Influx connection information is missing from the config")
+#if influx_ip is None or influx_port is None or influx_username is None or influx_password is None or influx_database is None:
+#    raise Exception("At least one piece of Influx connection information is missing from the config")
 
-if "Modem" in config:
-    modem_ip = config["Modem"].get("ip-address")
-    modem_username = config["Modem"].get("username")
-    modem_password = config["Modem"].get("password")
-else:
-    raise Exception("Wasn't able to find the 'Modem' section in the config")
-
-if modem_ip is None or modem_username is None or modem_password is None:
-    raise Exception("At least one piece of Modem connection information is missing from the config")
+#if "Modem" in config:
+#    modem_ip = config["Modem"].get("ip-address")
+#    modem_username = config["Modem"].get("username")
+#    modem_password = config["Modem"].get("password")
+#else:
+#    raise Exception("Wasn't able to find the 'Modem' section in the config")
+#
+#if modem_ip is None or modem_username is None or modem_password is None:
+#    raise Exception("At least one piece of Modem connection information is missing from the config")
 
 logger = logging.getLogger("Rotating Error Log")
 logger.setLevel(logging.ERROR)
