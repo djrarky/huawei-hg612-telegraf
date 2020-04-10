@@ -5,6 +5,8 @@ import time as t
 import datetime as dt
 import os
 import sys
+import json
+
 
 try:
     modem_ip = sys.argv[1]
@@ -61,13 +63,10 @@ class ParsedStats:
 
 def main():
     timestamp = dt.datetime.fromtimestamp(t.time()).strftime("%Y-%m-%dT%H:%M:%S")
-    try:
-        parsed_stats = retrieve_stats()
-        json = format_json(parsed_stats, timestamp)
-        print(json)
+    parsed_stats = retrieve_stats()
+    json_output = format_json(parsed_stats, timestamp)
+    print(json_output)
 
-    except Exception as ex:
-        print("Error")
 
 
 def retrieve_stats():
@@ -93,7 +92,7 @@ def retrieve_stats():
 def format_json(parsedStats, timestamp):
     try:
         if parsedStats.connection_up:
-            return [{"measurement": "dslstats"+"_"+modem_ip, "time": timestamp,
+            json_obj = [{"measurement": "dslstats"+"_"+modem_ip, "time": timestamp,
                      "fields":
                          {"AttDown": parsedStats.attn_down,
                           "AttnUp": parsedStats.attn_up,
@@ -114,8 +113,9 @@ def format_json(parsedStats, timestamp):
                           "UnavailableSecsDown": parsedStats.unavailable_secs_down,
                           "UnavailableSecsUp": parsedStats.unavailable_secs_up
                           }}]
+            return(json.dumps(json_obj))
         else:
-            return [{"measurement": "connection", "time": timestamp,
+            json_obj = [{"measurement":  "dslstats"+"_"+modem_ip, "time": timestamp,
                      "fields":
                          {"AttDown": -1,
                           "AttnUp": -1,
@@ -136,6 +136,7 @@ def format_json(parsedStats, timestamp):
                           "UnavailableSecsDown": -1,
                           "UnavailableSecsUp": -1
                           }}]
+            return json.dumps(json_obj)
     except Exception:
         raise
 
