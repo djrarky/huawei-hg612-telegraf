@@ -1,21 +1,12 @@
-#!/usr/bin/env python3
-
 import telnetlib as tn
 import time as t
-import datetime as dt
 import os
 import sys
 import json
 
-
-try:
-    modem_ip = sys.argv[1]
-except IndexError:
-    modem_ip = '192.168.42.186'
-
-modem_username = 'admin'
-modem_password = 'admin'
-
+modem_ip = sys.argv[1]
+modem_username = sys.argv[2]
+modem_password = sys.argv[3]
 
 class ParsedStats:
     def __init__(self, conn_stats_output, system_uptime):
@@ -60,14 +51,10 @@ class ParsedStats:
         system_uptime_split = system_uptime.decode().split("\r\n")
         self.system_uptime = float(system_uptime_split[1].split(" ")[0])
 
-
 def main():
-    timestamp = dt.datetime.fromtimestamp(t.time()).strftime("%Y-%m-%dT%H:%M:%S")
     parsed_stats = retrieve_stats()
-    json_output = format_json(parsed_stats, timestamp)
-    print(json_output)
-
-
+    influxdb_line = format_influxdb_line(parsed_stats)
+    print(influxdb_line)
 
 def retrieve_stats():
     try:
@@ -88,57 +75,13 @@ def retrieve_stats():
     except Exception:
         raise
 
-
-def format_json(parsedStats, timestamp):
+def format_influxdb_line(parsedStats):
     try:
         if parsedStats.connection_up:
-            json_obj = [{"measurement": "dslstats"+"_"+modem_ip, "time": timestamp,
-                     "fields":
-                         {"AttDown": parsedStats.attn_down,
-                          "AttnUp": parsedStats.attn_up,
-                          "AvailableSecs": parsedStats.available_secs,
-                          "CurrDown": parsedStats.current_down,
-                          "CurrUp": parsedStats.current_up,
-                          "ErrSecsDown": parsedStats.err_secs_down,
-                          "ErrSecsUp": parsedStats.err_secs_up,
-                          "MaxDown": parsedStats.max_down,
-                          "MaxUp": parsedStats.max_up,
-                          "PwrDown": parsedStats.pwr_down,
-                          "PwrUp": parsedStats.pwr_up,
-                          "SeriousErrSecsDown": parsedStats.serious_err_secs_down,
-                          "SeriousErrSecsUp": parsedStats.serious_err_secs_up,
-                          "SNRDown": parsedStats.snr_down,
-                          "SNRUp": parsedStats.snr_up,
-                          "SystemUptime": parsedStats.system_uptime,
-                          "UnavailableSecsDown": parsedStats.unavailable_secs_down,
-                          "UnavailableSecsUp": parsedStats.unavailable_secs_up
-                          }}]
-            return(json.dumps(json_obj))
-        else:
-            json_obj = [{"measurement":  "dslstats"+"_"+modem_ip, "time": timestamp,
-                     "fields":
-                         {"AttDown": -1,
-                          "AttnUp": -1,
-                          "AvailableSecs": -1,
-                          "CurrDown": -1,
-                          "CurrUp": -1,
-                          "ErrSecsDown": -1,
-                          "ErrSecsUp": -1,
-                          "MaxDown": -1,
-                          "MaxUp": -1,
-                          "PwrDown": -1,
-                          "PwrUp": -1,
-                          "SeriousErrSecsDown": -1,
-                          "SeriousErrSecsUp": -1,
-                          "SNRDown": -1,
-                          "SNRUp": -1,
-                          "SystemUptime": parsedStats.system_uptime,
-                          "UnavailableSecsDown": -1,
-                          "UnavailableSecsUp": -1
-                          }}]
-            return json.dumps(json_obj)
+            tags = f"modem_ip={modem_ip}"
+            fields = f"AttDown={parsedStats.attn_down},AttnUp={parsedStats.attn_up},AvailableSecs={parsedStats.available_secs},CurrDown={parsedStats.current_down},CurrUp={parsedStats.current_up},ErrSecsDown={parsedStats.err_secs_down},ErrSecsUp={parsedStats.err_secs_up},MaxDown={parsedStats.max_down},MaxUp={parsedStats.max_up},PwrDown={parsedStats.pwr_down},PwrUp={parsedStats.pwr_up},SeriousErrSecsDown={parsedStats.serious_err_secs_down},SeriousErrSecsUp={parsedStats.serious_err_secs_up},SNRDown={parsedStats.snr_down},SNRUp={parsedStats.snr_up}"
+            return f"dslstats,{tags} {fields}"
     except Exception:
         raise
-
 
 main()
