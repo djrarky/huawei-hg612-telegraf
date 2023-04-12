@@ -12,6 +12,8 @@ See: https://kitz.co.uk/routers/hg612unlock.htm for flashing instructions and fi
 * Current upstream speed
 * Error seconds (downstream)
 * Error seconds (upstream)
+* Interleaving upsteam
+* Interleaving downstream
 * Max downstream speed
 * Max upstream speed
 * Power (downstream)
