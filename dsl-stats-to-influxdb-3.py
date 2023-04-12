@@ -33,6 +33,10 @@ class ParsedStats:
             pwr_split = pwr_line.split("\t\t ")
             self.pwr_down = float(pwr_split[0])
             self.pwr_up = float(pwr_split[1])
+            interleaving_line = conn_stats_output_split[28].replace("D:\t\t", "")
+            interleaving_split = interleaving_line.split("\t\t")
+            self.int_down = int(interleaving_split[0])
+            self.int_up = int(interleaving_split[1])
             err_secs_line = conn_stats_output_split[98].replace("ES:\t\t", "")
             err_secs_split = err_secs_line.split("\t\t")
             self.err_secs_up = int(err_secs_split[0])
@@ -83,7 +87,7 @@ def format_influxdb_line(parsedStats):
     try:
         if parsedStats.connection_up:
             tags = f"modem_ip={modem_ip}"
-            fields = f"AttDown={parsedStats.attn_down},AttnUp={parsedStats.attn_up},AvailableSecs={parsedStats.available_secs},CurrDown={parsedStats.current_down},CurrUp={parsedStats.current_up},ErrSecsDown={parsedStats.err_secs_down},ErrSecsUp={parsedStats.err_secs_up},MaxDown={parsedStats.max_down},MaxUp={parsedStats.max_up},PwrDown={parsedStats.pwr_down},PwrUp={parsedStats.pwr_up},SeriousErrSecsDown={parsedStats.serious_err_secs_down},SeriousErrSecsUp={parsedStats.serious_err_secs_up},SNRDown={parsedStats.snr_down},SNRUp={parsedStats.snr_up},SystemUptime={parsedStats.system_uptime},UnavailableSecsDown={parsedStats.unavailable_secs_down},UnavailableSecsUp={parsedStats.unavailable_secs_up},DSLUptime={parsedStats.DSLuptimeSeconds}"
+            fields = f"AttDown={parsedStats.attn_down},AttnUp={parsedStats.attn_up},AvailableSecs={parsedStats.available_secs},CurrDown={parsedStats.current_down},CurrUp={parsedStats.current_up},ErrSecsDown={parsedStats.err_secs_down},ErrSecsUp={parsedStats.err_secs_up},InterleavingDown={parsedStats.int_down},InterleavingUp={parsedStats.int_up},MaxDown={parsedStats.max_down},MaxUp={parsedStats.max_up},PwrDown={parsedStats.pwr_down},PwrUp={parsedStats.pwr_up},SeriousErrSecsDown={parsedStats.serious_err_secs_down},SeriousErrSecsUp={parsedStats.serious_err_secs_up},SNRDown={parsedStats.snr_down},SNRUp={parsedStats.snr_up},SystemUptime={parsedStats.system_uptime},UnavailableSecsDown={parsedStats.unavailable_secs_down},UnavailableSecsUp={parsedStats.unavailable_secs_up} 1={parsedStats.DSLuptimeSeconds}"
             return f"dslstats,{tags} {fields}"
     except Exception:
         raise
