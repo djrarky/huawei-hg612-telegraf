@@ -23,6 +23,7 @@ See: https://kitz.co.uk/routers/hg612unlock.htm for flashing instructions and fi
 * System (modem) uptime
 * Unavailable seconds (downstream)
 * Unavailable seconds (upstream)
+* DSL Uptime
 
 ## Configure
 ## Docker Configuration
