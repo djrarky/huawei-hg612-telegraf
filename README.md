@@ -32,7 +32,7 @@ See here: https://github.com/djrarky/telegraf-python3#configure
 ```
 [[inputs.exec]]
   ## Commands array
-  commands = ["python3 location/telegraf-huawei-lte.py 'http://username:password@IP Address/'"]
+  commands = ["python3 location/dsl-stats-to-influxdb-3.py 'IPAddress' 'username' 'password'"]
 
   ## measurement name suffix (for separating different commands)
   name_suffix = "_mycollector"
