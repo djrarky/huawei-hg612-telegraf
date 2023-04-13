@@ -63,10 +63,10 @@ class ParsedStats:
                         minutes += int(components[i-1])
                     elif "sec" in components[i]:
                         seconds += int(components[i-1])
-            self.days = days
-            self.hours = hours
-            self.mins = minutes
-            self.seconds = seconds
+            days = days
+            hours = hours
+            mins = minutes
+            seconds = seconds
             self.DSLuptimeSeconds = (days * 24 * 60 * 60) + (hours * 60 * 60) + (minutes * 60) + seconds
         else:
             self.connection_up = False
