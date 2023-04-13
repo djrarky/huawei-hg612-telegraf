@@ -50,9 +50,9 @@ class ParsedStats:
             self.unavailable_secs_up = int(unavailable_secs_split[0])
             self.unavailable_secs_down = int(unavailable_secs_split[1])
             self.available_secs = int(conn_stats_output_split[101].replace("AS:\t\t", ""))
-            self.DSLuptime = conn_stats_output_split[166].replace("Since Link time = ", "")
+            DSLuptime = conn_stats_output_split[166].replace("Since Link time = ", "")
             days = hours = minutes = seconds = 0
-            components = self.DSLuptime.split()
+            components = DSLuptime.split()
             for i in range(len(components)):
                 if i > 0 and components[i-1].isdigit():
                     if "day" in components[i]:
